@@ -13,6 +13,7 @@
   (print bindices)
   (print ($dim xbatch)))
 
+;; XXX need to be updated as new architecture is implemented
 (defclass SIMPLEMNISTNET (NEURALNETWORK)
   ((params :initform nil)
    (affinelayer01 :initform nil)
