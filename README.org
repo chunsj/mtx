@@ -1,0 +1,30 @@
+* What is MTX?
+MTX is built during my reading of "Deep Learning From Scratch" book. I'd like to build a simple common
+lisp library from which one can learn (as I have done) lisp programming and its application to deep
+learning (or linear algera math things).
+MTX has two parts; one for linear algebra (to learn how to use BLAS/LAPACK) and the other for neural
+net (to lean deep learning related basics). I've some experience on using Clojure and its core.matrix,
+so my APIs for matrix are rather similar in style. Most of the neural network parts are from the book,
+though I've adjusted and modified the architecture to my preference.
+
+* So how to use this MTX thing?
+I did not write a good documentation on my MTX library, however, you can see what I want to do by
+reading some example codes in ex directory. Most exmaple codes are for linear algebra and neural net.
+** Linear Algebra or Simple Matrix
+- ex-la.lisp, which is a test of some linear algebra routines mentioned in a medium blog
+- ex-bs.lisp, mostly my API testing codes
+** Neural Network
+- ex-opt.lisp, optimizer test, from the DLFS book
+- ex-snn.lisp, direct implementations of single, linear model and multi-layer non-linear model
+- ex-gnn.lisp, simple neural network models using SNN class
+- ex-mln.lisp, test codes for different optimizers and layers
+** MNIST Dataset Related
+- ex-mnist.lisp, trying to implement an efficient mnist processing neural network, not working yet
+
+* Why?
+- I'd like to do some neural network things but I cannot find good introductory materials
+- I want a fast implementation of linear algebra yet simple enough to understand
+- I want to learn how to use BLAS/LAPACK
+- I think I can build simpler API as numpy in python for common lisp
+- I want to use/learn common lisp
+- I want to prove common lisp with the help of BLAS/LAPACK can be one of the fastest platform for nn

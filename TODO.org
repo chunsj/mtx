@@ -1,0 +1,5 @@
+* TODO Clean examples code
+** Simple Linear Algebra Examples
+** Neural Network Examples
+*** Simple, direct examples
+*** Graph, Layer examples

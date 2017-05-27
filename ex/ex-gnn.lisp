@@ -1,0 +1,108 @@
+(in-package :mtx)
+
+;; error functions, mean square error and cross entroy error
+($mse ($m '((1 2 3) (4 5 6) (7 8 9) (10 11 12))) ($m '(11 12 23)))
+($cee ($m '((1 2 3) (4 5 6) (7 8 9) (10 11 12))) ($m '(11 12 23)))
+
+;; affine layer test
+(let* ((al ($affine-layer 2 2 :winit :xavier))
+       (x ($m '((1 0) (0 1) (1 1) (0 0))))
+       (y ($m '((1 0) (1 0) (1 0) (0 1))))
+       (y0 nil)
+       (yc nil))
+  (setf yc (forward-propagate al :xs x))
+  (setf y0 yc)
+  (dotimes (i 100)
+    (let ((dout ($- yc y)))
+      (setf dout (backward-propagate al :d dout))
+      ($axpy (dw al) (slot-value al 'w) :alpha -0.2)
+      ($axpy (db al) (slot-value al 'b) :alpha -0.2)
+      (setf yc (forward-propagate al :xs x))))
+  (list ($round y0) ($round yc)))
+
+;; linear mapping network
+(let* ((X ($m '((0 0) (1 0) (0 1) (1 1))))
+       (y ($m '(0 1 0 1) 1))
+       (layers (list ($affine-layer 2 1)))
+       (optimizer ($sgd-optimizer :lr 1.0))
+       (nw ($snn layers :o optimizer))
+       (ntr 10))
+  (dotimes (i ntr) (train nw :xs X :ts y))
+  ($round (predict nw :xs X)))
+
+;; linear network with sigmoid
+(let* ((X ($m '((0 0) (1 0) (0 1) (1 1))))
+       (y ($m '(0 1 0 1) 1))
+       (layers (list ($affine-layer 2 1)
+                     ($sigmoid-layer)))
+       (optimizer ($sgd-optimizer :lr 1.0))
+       (nw ($snn layers :o optimizer))
+       (ntr 100))
+  (dotimes (i ntr) (train nw :xs X :ts y))
+  ($round (predict nw :xs X)))
+
+;; as first argument
+(let* ((X ($m '((0 0) (1 0) (0 1) (1 1))))
+       (y ($m '(0 1 0 1) 1))
+       (layers (list ($affine-layer 2 1)))
+       (optimizer ($sgd-optimizer :lr 1.0))
+       (nw ($snn layers :o optimizer))
+       (ntr 100))
+  (dotimes (i ntr) (train nw :xs X :ts y))
+  ($round (predict nw :xs X)))
+
+;; or of arguments
+(let* ((X ($m '((0 0) (1 0) (0 1) (1 1))))
+       (y ($m '(0 1 1 1) 1))
+       (layers (list ($affine-layer 2 1)))
+       (optimizer ($sgd-optimizer :lr 1.0))
+       (nw ($snn layers :o optimizer))
+       (ntr 100))
+  (dotimes (i ntr) (train nw :xs X :ts y))
+  ($round (predict nw :xs X)))
+
+;; and of arguments
+(let* ((X ($m '((0 0) (1 0) (0 1) (1 1))))
+       (y ($m '(1 0 0 0) 1))
+       (layers (list ($affine-layer 2 1)))
+       (optimizer ($sgd-optimizer :lr 1.0))
+       (nw ($snn layers :o optimizer))
+       (ntr 100))
+  (dotimes (i ntr) (train nw :xs X :ts y))
+  ($round (predict nw :xs X)))
+
+;; as onehot encoded output
+(let* ((X ($m '((0 0) (1 0) (0 1) (1 1))))
+       (y ($m '((0 1) (1 0) (1 0) (1 0))))
+       (layers (list ($affine-layer 2 2)))
+       (optimizer ($sgd-optimizer :lr 1.0))
+       (nw ($snn layers :o optimizer))
+       (ntr 100))
+  (dotimes (i ntr) (train nw :xs X :ts y))
+  ($round (predict nw :xs X)))
+
+;; non-linear network with sigmoid
+(let* ((X ($m '((0 0) (1 0) (0 1) (1 1))))
+       (y ($m '(0 1 1 0) 1))
+       (layers (list ($affine-layer 2 4)
+                     ($sigmoid-layer)
+                     ($affine-layer 4 1)
+                     ($sigmoid-layer)))
+       (optimizer ($sgd-optimizer :lr 1.0))
+       (nw ($snn layers :o optimizer))
+       (ntr 1000))
+  (dotimes (i ntr) (train nw :xs X :ts y))
+  ($round (predict nw :xs X)))
+
+;; xor as onehot encoding
+(let* ((X ($m '((0 0) (1 0) (0 1) (1 1))))
+       (y ($m '((1 0) (0 1) (0 1) (1 0))))
+       (layers (list ($affine-layer 2 4)
+                     ($sigmoid-layer)
+                     ($affine-layer 4 2)
+                     ($sigmoid-layer)))
+       (optimizer ($sgd-optimizer :lr 1.0))
+       (nw ($snn layers :o optimizer))
+       (ntr 1000))
+  (dotimes (i ntr) (train nw :xs X :ts y))
+  ($round (predict nw :xs X)))
