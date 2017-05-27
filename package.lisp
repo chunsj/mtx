@@ -56,15 +56,43 @@
            #:@>
            #:@>>
            #:LAYER
+           #:OPTIMIZER
+           #:NEURALNETWORK
            #:forward-propagate
            #:backward-propagate
-           #:SIGMOIDLAYER
-           #:RELULAYER
-           #:AFFINELAYER
-           #:SOFTMAXCEELOSSLAYER
-           #:PLAINMSELOSSLAYER
-           #:NEURALNETWORK
+           #:optimize-parameters
+           #:regularization
+           #:parameters
+           #:initialize-parameters
+           #:update
            #:predict
            #:loss
            #:gradient
-           #:train))
+           #:train
+           #:SIGMOIDLAYER
+           #:$sigmoid-layer
+           #:RELULAYER
+           #:$relu-layer
+           #:SOFTMAXCEELOSSLAYER
+           #:$softmax-layer
+           #:PLAINMSELOSSLAYER
+           #:$mse-layer
+           #:DROPOUTLAYER
+           #:$dropout-layer
+           #:AFFINELAYER
+           #:$affine-layer
+           #:BATCHNORMLAYER
+           #:batchnorm-layer
+           #:SNN
+           #:SGD
+           #:$sgd-optimizer
+           #:MOMENTUM
+           #:$momentum-optimizer
+           #:NESTEROV
+           #:$nesterov-optimizer
+           #:ADAGRAD
+           #:$adagrad-optimizer
+           #:RMSPROP
+           #:$rmsprop-optimizer
+           #:ADAM
+           #:$adam-optimizer))
