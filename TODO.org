@@ -3,3 +3,7 @@
 ** Neural Network Examples
 *** Simple, direct examples
 *** Graph, Layer examples
+
+* TODO GPU...
+** Abstract interface to BLAS/LAPACK for both CPU and GPU
+*** Single, Uniform interface
