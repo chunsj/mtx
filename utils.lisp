@@ -15,14 +15,14 @@
                        sequence)
                   #'< :key #'cdr)))
 
+(defun $partition (list cell-size)
+  (loop :for cell :on list :by (lambda (list) (nthcdr cell-size list))
+     :collecting (subseq cell 0 cell-size)))
+
 (defun $linspace (from to length &key (endpoint T))
   (let ((step (/ (- to from) (if endpoint (1- length) length))))
     ($m (loop :for i :from 0 :below length
            :collect (coerce (+ from (* i step)) 'double-float)))))
-
-(defun $partition (list cell-size)
-  (loop :for cell :on list :by (lambda (list) (nthcdr cell-size list))
-     :collecting (subseq cell 0 cell-size)))
 
 (defmacro @> (initial-form &rest forms)
   (let ((output-form initial-form)
