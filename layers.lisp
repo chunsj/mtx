@@ -42,6 +42,21 @@
   (with-slots (out) l
     ($map (lambda (de oe) (if (> oe 0) de 0.0)) d out)))
 
+(defclass LKYRELULAYER (LAYER)
+  ((lky :initform 0.01 :initarg :l)
+   (out :initform nil)))
+
+(defun $lkyrelu-layer (&key (lky 0.01)) (make-instance 'LKYRELULAYER :l lky))
+
+(defmethod forward-propagate ((l LKYRELULAYER) &key xs)
+  (with-slots (out lky) l
+    (setf out ($lkyrelu xs :lky lky))
+    out))
+
+(defmethod backward-propagate ((l LKYRELULAYER) &key d)
+  (with-slots (out lky) l
+    ($map (lambda (de oe) (if (> oe 0) de (* lky de))) d out)))
+
 (defclass SOFTMAXCEELOSSLAYER (LAYER)
   ((loss :initform nil)
    (ys :reader ys :initform nil)

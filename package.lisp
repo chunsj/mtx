@@ -47,6 +47,7 @@
            #:$atan
            #:$softmax
            #:$relu
+           #:$lkyrelu
            #:$mse
            #:$cee
            #:$shuffle
@@ -73,6 +74,8 @@
            #:$sigmoid-layer
            #:RELULAYER
            #:$relu-layer
+           #:LKYRELULAYER
+           #:$lkyrelu-layer
            #:SOFTMAXCEELOSSLAYER
            #:$softmax-layer
            #:PLAINMSELOSSLAYER

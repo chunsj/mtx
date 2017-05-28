@@ -105,6 +105,14 @@
 
 (defmethod $relu! ((m MX)) ($map! (lambda (v) (max 0 v)) m))
 
+(defgeneric $lkyrelu (m &key))
+
+(defmethod $lkyrelu ((n NUMBER) &key (lky 0.01)) (if (plusp n) n (* lky n)))
+(defmethod $lkyrelu ((m MX) &key (lky 0.01)) ($map (lambda (n) (if (plusp n) n (* lky n))) m))
+
+(defgeneric $lkyrelu! (m &key))
+(defmethod $lkyrelu! ((m MX) &key (lky 0.01)) ($map! (lambda (n) (if (plusp n) n (* lky n))) m))
+
 (defun $mse (yv tv)
   ($x (/ 1.0 ($nrow yv)) ($sum ($expt ($- yv tv) 2))))
 
