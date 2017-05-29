@@ -20,5 +20,13 @@
 
 (defparameter *mnist* (read-mnist-data))
 
+(defun conv-at (images i)
+  (let ((m ($reshape ($ images i T) 28 28))
+        (f ($m '((2 0 1)
+                 (0 1 2)
+                 (1 0 2)))))
+    ($convolute m f :stride 3)))
+
+;; XXX too slow
 (let* ((train-images (getf *mnist* :train-images)))
-  ($reshape ($ train-images 0 T) 28 28))
+  (time (dotimes (i ($nrow train-images)) (conv-at train-images i))))
