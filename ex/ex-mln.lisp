@@ -106,7 +106,7 @@
 ;; batch norm test
 (let* ((X ($m '((0 0) (1 0) (0 1) (1 1))))
        (y ($m '((1 0) (0 1) (0 1) (1 0))))
-       (o ($sgd-optimizer :lr 1.0))
+       (o ($sgd-optimizer :lr 20.0))
        (n ($snn (list ($affine-layer 2 4 :winit :xavier)
                       ($batchnorm-layer 4)
                       ($sigmoid-layer)
@@ -114,7 +114,7 @@
                       ($batchnorm-layer 2)
                       ($sigmoid-layer))
                 :o o))
-       (ntr 4000))
+       (ntr 100))
   (print ($str "INITIAL: " ($argmax (predict n :xs X) :axis :row)))
   (time (dotimes (i ntr) (train n :xs X :ts y)))
   (print ($str "FINAL: " ($argmax (predict n :xs X) :axis :row))))
