@@ -8,7 +8,7 @@ so my APIs for matrix are rather similar in style. Most of the neural network pa
 though I've adjusted and modified the architecture to my preference.
 
 * So how to use this MTX thing?
-I did not write a good documentation on my MTX library, however, you can see what I want to do by
+There's no good documentation on my MTX library :-P, however, you can see what I want to do by
 reading some example codes in ex directory. Most exmaple codes are for linear algebra and neural net.
 ** Linear Algebra or Simple Matrix
 - ex-la.lisp, which is a test of some linear algebra routines mentioned in a medium blog
