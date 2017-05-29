@@ -15,6 +15,8 @@
            #:$cols
            #:$dup
            #:$reshape
+           #:$transpose
+           #:$sm
            #:$+
            #:$-
            #:$*
@@ -26,6 +28,7 @@
            #:$argmax
            #:$argmin
            #:$mean
+           #:$convolute
            #:$xwpb
            #:$gemm
            #:$mm

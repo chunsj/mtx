@@ -281,12 +281,19 @@
          (ncm ($ncol m))
          (mv ($fnv m))
          (nv ($fnv nm)))
-    (loop :for j :from 0 :below ncm
-       :do (loop :for i :from 0 :below nrm
-              :do (setf ($ref nv (+ (* ncm i) j)) ($ref mv (+ (* nrm j) i)))))
+    (dotimes (j ncm)
+      (dotimes (i nrm)
+        (setf ($ref nv (+ (* ncm i) j)) ($ref mv (+ (* nrm j) i)))))
     nm))
 
 (defgeneric $transpose (m))
 
 (defmethod $transpose ((n NUMBER)) n)
 (defmethod $transpose ((m MX)) (transpose-on m ($m 0 ($ncol m) ($nrow m))))
+
+(defun $sm (m i0 j0 nr nc)
+  (let ((nm ($zeros nr nc)))
+    (dotimes (j nc)
+      (dotimes (i nr)
+        (setf ($ nm i j) ($ m (+ i0 i) (+ j0 j)))))
+    nm))

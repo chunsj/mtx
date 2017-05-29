@@ -467,3 +467,30 @@
                                           (/ (loop :for i :from 0 :below nr :sum ($ m i j))
                                              nr)))
                              nm))))
+
+(defgeneric $fma (sm f))
+
+(defmethod $fma ((sm MX) f)
+  (let ((n ($size sm))
+        (psm ($ptr sm))
+        (pf ($ptr f))
+        (s 0.0))
+    (dotimes (i n)
+      (incf s (* ($prf psm i) ($prf pf i))))
+    s))
+
+(defun convolution-size (m f)
+  (let ((fnr ($nrow f))
+        (fnc ($ncol f))
+        (mnr ($nrow m))
+        (mnc ($ncol m)))
+    (list (1+ (rem mnr fnr)) (1+ (rem mnc fnc)))))
+
+(defun $convolute (m f &optional (b 0.0))
+  (let* ((cnvsz (convolution-size m f))
+         (cnvm (apply #'$zeros cnvsz))
+         (bf (* 1.0 b)))
+    (loop :for i :below (car cnvsz) :do
+       (loop :for j :below (cadr cnvsz) :do
+          (setf ($ cnvm i j) (+ ($fma ($sm m i j 3 3) f) bf))))
+    cnvm))
