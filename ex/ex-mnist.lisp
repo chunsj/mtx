@@ -47,6 +47,7 @@
   (print ($str "FINAL[T]: " ($argmax (predict nn :xs tX) :axis :row)))
   (print ($str "TRUE[T]: " ($argmax ty :axis :row))))
 
+;; with weight penalty
 (let* ((train-images (getf *mnist* :train-images))
        (train-labels (getf *mnist* :train-labels))
        (test-images (getf *mnist* :test-images))
