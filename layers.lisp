@@ -199,7 +199,7 @@
     (if tf
         (let* ((tmu ($mean x :axis :column))
                (txc ($- x tmu))
-               (tvar ($mean ($x x x) :axis :column))
+               (tvar ($mean ($x txc txc) :axis :column))
                (tstd ($sqrt ($+ tvar 10E-7)))
                (txn ($/ txc tstd)))
           (setf batch-size ($nrow x))
