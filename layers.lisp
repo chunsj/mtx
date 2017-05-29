@@ -179,8 +179,8 @@
 (defun $batchnorm-layer (sz &key (m 0.9) rm rv)
   (let ((l (make-instance 'BATCHNORMLAYER :m m :rm rm :rv rv)))
     (with-slots (gamma beta) l
-      (setf gamma ($m 1.0 sz 1))
-      (setf beta ($m 0.0 sz 1)))
+      (setf gamma ($ones sz 1))
+      (setf beta ($zeros sz 1)))
     l))
 
 (defun bn-forward-h (l x tf)

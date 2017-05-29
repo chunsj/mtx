@@ -173,6 +173,16 @@
         ((and d0 (eq d1 nil)) ($mx ($rnvx d0) :nrow 1 :ncol d0))
         ((and d0 d1) ($mx ($rnvx (* d0 d1)) :nrow d0 :ncol d1))))
 
+(defun $ones (&optional d0 d1)
+  (cond ((and (eq d0 nil) (eq d1 nil)) 1.0)
+        ((and d0 (eq d1 nil)) ($mx (loop :for i :from 0 :below d0 :collect 1.0) :nrow 1 :ncol d0))
+        ((and d0 d1) ($mx (loop :for i :from 0 :below (* d0 d1) :collect 1.0) :nrow d0 :ncol d1))))
+
+(defun $zeros (&optional d0 d1)
+  (cond ((and (eq d0 nil) (eq d1 nil)) 0.0)
+        ((and d0 (eq d1 nil)) ($mx (loop :for i :from 0 :below d0 :collect 0.0) :nrow 1 :ncol d0))
+        ((and d0 d1) ($mx (loop :for i :from 0 :below (* d0 d1) :collect 0.0) :nrow d0 :ncol d1))))
+
 (defun $ (m &optional (i T) (j T))
   (cond ((not (typep m 'mx)) nil)
         ((and (eq i T) (eq j T)) m)
@@ -238,6 +248,14 @@
                                          (setf ($prf mvs (+ i (* nr j))) (* 1.0 nv))))))
 
 (defsetf $ (m i j) (v) `($setv ,m ,v ,i ,j))
+
+(defun $eye (&optional n)
+  (cond ((null n) 1.0)
+        ((= n 1) ($ones 1 1))
+        (T (let ((zm ($zeros n n)))
+             (dotimes (i n)
+               (setf ($ zm i i) 1.0))
+             zm))))
 
 (defun $rows (m &optional indices)
   (if indices

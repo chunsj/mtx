@@ -7,6 +7,9 @@
            #:$m
            #:$r
            #:$rn
+           #:$ones
+           #:$zeros
+           #:$eye
            #:$
            #:$rows
            #:$cols
