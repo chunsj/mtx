@@ -20,16 +20,16 @@
         (initialize-parameters optimizer params)))
     nw))
 
-(defmethod predict ((nw SNN) &key xs)
+(defmethod predict ((nw SNN) &key xs train)
   (with-slots (layers) nw
     (let ((ys xs))
       (dolist (l layers)
-        (setf ys (forward-propagate l :xs ys)))
+        (setf ys (forward-propagate l :xs ys :train train)))
       ys)))
 
 (defmethod loss ((nw SNN) &key xs ts)
   (with-slots (errlayer layers wdl) nw
-    (let ((ys (predict nw :xs xs))
+    (let ((ys (predict nw :xs xs :train T))
           (wd 0.0))
       (dolist (l layers) (incf wd (regularization l)))
       ($+ (forward-propagate errlayer :ys ys :ts ts)

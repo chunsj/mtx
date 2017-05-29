@@ -35,11 +35,13 @@
 (defgeneric $sigmoid (m))
 
 (defmethod $sigmoid ((n NUMBER)) (/ 1.0 (+ 1.0 (exp (- n)))))
-(defmethod $sigmoid ((m MX)) ($map! (lambda (v) (/ 1.0 (+ 1.0 (exp (- v))))) ($dup m)))
+;;(defmethod $sigmoid ((m MX)) ($map! (lambda (v) (/ 1.0 (+ 1.0 (exp (- v))))) ($dup m)))
+;; trying to avoid overflow
+(defmethod $sigmoid ((m MX)) ($map! (lambda (v) (* 0.5 (+ 1.0 (tanh (* 0.5 v))))) ($dup m)))
 
 (defgeneric $sigmoid! (m))
 
-(defmethod $sigmoid! ((m MX)) ($map! (lambda (v) (/ 1.0 (+ 1.0 (exp (- v))))) m))
+(defmethod $sigmoid! ((m MX)) ($map! (lambda (v) (* 0.5 (+ 1.0 (tanh (* 0.5 v))))) m))
 
 (defgeneric $sin (m))
 

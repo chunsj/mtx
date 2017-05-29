@@ -5,7 +5,8 @@
 
 (defun $sigmoid-layer () (make-instance 'SIGMOIDLAYER))
 
-(defmethod forward-propagate ((l SIGMOIDLAYER) &key xs)
+(defmethod forward-propagate ((l SIGMOIDLAYER) &key xs train)
+  (declare (ignore train))
   (with-slots (out) l
     (setf out ($sigmoid xs))
     out))
@@ -19,7 +20,8 @@
 
 (defun $tanh-layer () (make-instance 'TANHLAYER))
 
-(defmethod forward-propagate ((l TANHLAYER) &key xs)
+(defmethod forward-propagate ((l TANHLAYER) &key xs train)
+  (declare (ignore train))
   (with-slots (out) l
     (setf out ($tanh xs))
     out))
@@ -33,7 +35,8 @@
 
 (defun $relu-layer () (make-instance 'RELULAYER))
 
-(defmethod forward-propagate ((l RELULAYER) &key xs)
+(defmethod forward-propagate ((l RELULAYER) &key xs train)
+  (declare (ignore train))
   (with-slots (out) l
     (setf out ($relu xs))
     out))
@@ -48,7 +51,8 @@
 
 (defun $lkyrelu-layer (&key (lky 0.01)) (make-instance 'LKYRELULAYER :l lky))
 
-(defmethod forward-propagate ((l LKYRELULAYER) &key xs)
+(defmethod forward-propagate ((l LKYRELULAYER) &key xs train)
+  (declare (ignore train))
   (with-slots (out lky) l
     (setf out ($lkyrelu xs :lky lky))
     out))
@@ -99,18 +103,20 @@
 
 (defun $dropout-layer (&key (dr 0.5)) (make-instance 'DROPOUTLAYER :dr dr))
 
-(defmethod forward-propagate ((l DROPOUTLAYER) &key xs (tf T))
+(defmethod forward-propagate ((l DROPOUTLAYER) &key xs (train T))
   (with-slots (dr mask) l
-    (when (and tf (null mask))
+    (when train
       (setf mask ($map (lambda (v) (if (> v dr) 1.0 0.0))
                        ($r ($nrow xs) ($ncol xs)))))
-    (if tf
+    (if train
         ($x xs mask)
         ($x xs (- 1.0 dr)))))
 
 (defmethod backward-propagate ((l DROPOUTLAYER) &key d)
   (with-slots (mask) l
-    ($x d mask)))
+    (if mask
+        ($x d mask)
+        d)))
 
 (defclass AFFINELAYER (LAYER)
   ((input-size :initarg :input-size :initform nil)
@@ -140,7 +146,8 @@
               db ($m 0.0 1 output-size)))
       l)))
 
-(defmethod forward-propagate ((l AFFINELAYER) &key xs)
+(defmethod forward-propagate ((l AFFINELAYER) &key xs train)
+  (declare (ignore train))
   (with-slots (x w b) l
     (setf x xs)
     ($xwpb x w b)))
@@ -172,6 +179,7 @@
    (rvar :initarg :rv :initform nil)
    (batch-size :initform nil)
    (xc :initform nil)
+   (xn :initform nil)
    (std :initform nil)
    (dgamma :initform nil :reader dgamma)
    (dbeta :initform nil :reader dbeta)))
@@ -179,19 +187,19 @@
 (defun $batchnorm-layer (sz &key (m 0.9) rm rv)
   (let ((l (make-instance 'BATCHNORMLAYER :m m :rm rm :rv rv)))
     (with-slots (gamma beta) l
-      (setf gamma ($ones sz 1))
-      (setf beta ($zeros sz 1)))
+      (setf gamma ($ones 1 sz))
+      (setf beta ($zeros 1 sz)))
     l))
 
 (defun bn-forward-h (l x tf)
   (with-slots (rmean rvar batch-size xc xn std momentum beta gamma) l
     (when (null rmean)
-      (setf rmean ($m 0 ($nrow x) 1))
-      (setf rvar ($m 0 ($nrow x) 1)))
+      (setf rmean ($zeros 1 ($ncol x)))
+      (setf rvar ($zeros 1 ($ncol x))))
     (if tf
-        (let* ((tmu ($mean x :axis :row))
+        (let* ((tmu ($mean x :axis :column))
                (txc ($- x tmu))
-               (tvar ($mean ($x x x) :axis :row))
+               (tvar ($mean ($x x x) :axis :column))
                (tstd ($sqrt ($+ tvar 10E-7)))
                (txn ($/ txc tstd)))
           (setf batch-size ($nrow x))
@@ -205,19 +213,19 @@
           (setf xn ($/ xc ($sqrt ($+ rvar 10E-7))))))
     ($+ ($x gamma xn) beta)))
 
-(defmethod forward-propagate ((l BATCHNORMLAYER) &key xs (tf T))
-  (bn-forward-h l xs tf))
+(defmethod forward-propagate ((l BATCHNORMLAYER) &key xs (train T))
+  (bn-forward-h l xs train))
 
 (defun bn-backward-h (l dout)
   (with-slots (gamma dbeta dgamma std xn xc batch-size) l
-    (let* ((tdbeta ($sum dout :axis :row))
-           (tdgamma ($sum ($x xn dout) :axis :row))
+    (let* ((tdbeta ($sum dout :axis :column))
+           (tdgamma ($sum ($x xn dout) :axis :column))
            (dxn ($x gamma dout))
            (dxc ($/ dxn std))
-           (dstd ($- ($sum ($/ ($x dxn xc) ($x std std)) :axis :row)))
+           (dstd ($- ($sum ($/ ($x dxn xc) ($x std std)) :axis :column)))
            (dvar ($/ ($x 0.5 dstd) std))
            (dxc ($axpy ($x (/ 2.0 batch-size) xc dvar) dxc))
-           (dmu ($sum dxc :axis :row))
+           (dmu ($sum dxc :axis :column))
            (dx ($- dxc ($/ dmu batch-size))))
       (setf dgamma tdgamma)
       (setf dbeta tdbeta)
