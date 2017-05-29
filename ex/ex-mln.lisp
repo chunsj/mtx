@@ -114,7 +114,7 @@
                       ($batchnorm-layer 2)
                       ($sigmoid-layer))
                 :o o))
-       (ntr 100))
+       (ntr 200))
   (print ($str "INITIAL: " ($argmax (predict n :xs X) :axis :row)))
   (time (dotimes (i ntr) (train n :xs X :ts y)))
   (print ($str "FINAL: " ($argmax (predict n :xs X) :axis :row))))
