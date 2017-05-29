@@ -133,9 +133,9 @@
     (with-slots (input-size output-size wdl) l
       (format stream "[~A x ~A] WITH ~10,2E" input-size output-size wdl))))
 
-(defun $affine-layer (input-size output-size &key (winit :he) (wdl 0.0))
+(defun $affine-layer (input-size output-size &key (winit :he) (wr 0.0))
   (let ((l (make-instance 'AFFINELAYER :input-size input-size :output-size output-size
-                          :wdl wdl)))
+                          :wdl wr)))
     (with-slots (w b dw db) l
       (let ((sc (cond ((eq winit :he) (sqrt (/ 6.0 input-size)))
                       ((eq winit :xavier) (sqrt (/ 3.0 input-size)))
@@ -155,7 +155,7 @@
 (defmethod backward-propagate ((l AFFINELAYER) &key d)
   (with-slots (wdl x w dw db) l
     ($gemm x d :c dw :transa T)
-    (when (> (abs wdl) 0) ($axpy dw dw :alpha wdl))
+    (when (> (abs wdl) 0) ($axpy w dw :alpha wdl))
     ($copy ($sum d :axis :column) db)
     ($gemm d w :transb T)))
 
