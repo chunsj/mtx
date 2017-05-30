@@ -55,13 +55,17 @@
       ($ref ($fnv m) 0)
       m))
 
-(defun $reshape (m nrow ncol)
+(defun $reshape! (m nrow ncol)
   (let ((s ($size m)))
     (when (= s (* nrow ncol))
       (with-slots (nrows ncols) m
         (setf nrows nrow)
         (setf ncols ncol)
         m))))
+
+(defun $reshape (m nrow ncol)
+  (let ((nm ($dup m)))
+    ($reshape! nm nrow ncol)))
 
 (defmethod print-object ((m MX) stream)
   (let* ((nr0 ($nrow m))

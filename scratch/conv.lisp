@@ -1,5 +1,84 @@
 (in-package :mtx)
 
+(defparameter *mnist* (read-mnist-data))
+
+(let* ((m ($m '((1 2 3 0)
+                (0 1 2 3)
+                (3 0 1 2)
+                (2 3 0 1))))
+       (pm ($ptr m))
+       (mh ($nrow m))
+       (mw ($ncol m))
+       (f ($m '((2 0 1)
+                (0 1 2)
+                (1 0 2))))
+       (pf ($ptr f))
+       (fw ($ncol f))
+       (fh ($nrow f))
+       (stride 1)
+       (padding 0)
+       (ch (1+ (/ (+ (- mh fh) (* 2 padding)) stride)))
+       (cw (1+ (/ (+ (- mw fw) (* 2 padding)) stride)))
+       (cm ($m 0 1 (* ch cw fh fw)))
+       (pcm ($ptr cm))
+       (n 0))
+  (list pm pf)
+  (time
+   (dotimes (kkk 1000)
+     (setf n 0)
+     (loop :for i :from 0 :by stride :below ch :do
+        (loop :for j :from 0 :by stride :below cw :do
+           (let* ((sm ($sm m i j fh fw))
+                  (psm ($ptr sm))
+                  (l (* n (* fh fw))))
+             ;;(print ($fnv sm))
+             (dotimes (k (* fh fw))
+               (setf ($prf pcm (+ k l)) ($prf psm k)))
+             ;;(print ($sm cm 0 l 1 (* fh fw)))
+             (incf n))))))
+  cm)
+
+(defun im2cl (m fh fw stride padding)
+  (let* ((mh ($nrow m))
+         (mw ($ncol m))
+         (ch (1+ (/ (+ (- mh fh) (* 2 padding)) stride)))
+         (cw (1+ (/ (+ (- mw fw) (* 2 padding)) stride)))
+         (cm ($m 0 1 (* ch cw fh fw)))
+         (pcm ($ptr cm)))
+    (loop :for i :from padding :by stride :below ch :do
+       (loop :for j :from padding :by stride :below cw :do
+          (let* ((sm ($sm m i j fh fw))
+                 (psm ($ptr sm))
+                 (l (+ (* i (* cw fh fw)) (* j (* fh fw)))))
+            (dotimes (k (* fh fw))
+              (setf ($prf pcm (+ k l)) ($prf psm k))))))
+    cm))
+
+(let* ((m ($m '((1 2 3 0)
+                (0 1 2 3)
+                (3 0 1 2)
+                (2 3 0 1))))
+       (f ($m '((2 0 1)
+                (0 1 2)
+                (1 0 2)))))
+  (time (dotimes (i 1000) (im2cl m ($nrow f) ($ncol f) 1 0))))
+
+(let* ((train-images (getf *mnist* :train-images)))
+  (time
+   (dotimes (n 1000)
+     (im2cl ($reshape! ($ train-images n T) 28 28) 3 3 1 0))))
+
+(let* ((train-images (getf *mnist* :train-images)))
+  (let ((f ($m '((2 0 1) (0 1 2) (1 0 2))))
+        (r ($zeros 1 676)))
+    (time
+     (dotimes (n 1000)
+       (let ((mcl (im2cl ($reshape! ($ train-images n T) 28 28) 3 3 1 0)))
+         ($gemm ($reshape! f 1 9)
+                ($reshape! mcl 9 (/ ($size mcl) 9))
+                :c r))))))
+
+
 (let* ((m ($m '((1 2 3 0)
                 (0 1 2 3)
                 (3 0 1 2)
@@ -17,8 +96,6 @@
                 (0 1 2)
                 (1 0 2)))))
   ($convolute m f :padding 1 :stride 3))
-
-(defparameter *mnist* (read-mnist-data))
 
 (defun conv-at (images i)
   (let ((m ($reshape ($ images i T) 28 28))
