@@ -22,6 +22,7 @@ reading some example codes in ex directory. Most exmaple codes are for linear al
 - ex-mnist.lisp, trying to implement an efficient mnist processing neural network, not working yet
 
 * Why?
+- Of course, for fun!
 - I'd like to do some neural network things but I cannot find good introductory materials
 - I want a fast implementation of linear algebra yet simple enough to understand
 - I want to learn how to use BLAS/LAPACK
