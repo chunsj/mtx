@@ -468,26 +468,6 @@
                                              nr)))
                              nm))))
 
-(defgeneric $fma (sm f))
-
-(defmethod $fma ((sm MX) f)
-  (let ((n ($size sm))
-        (psm ($ptr sm))
-        (pf ($ptr f))
-        (s 0.0))
-    (dotimes (i n)
-      (incf s (* ($prf psm i) ($prf pf i))))
-    s))
-
-(defun padded-matrix (m padding)
-  (let* ((dim ($dim m))
-         (nm ($m 0 (+ (* 2 padding) (car dim)) (+ (* 2 padding) (cadr dim)))))
-    (dotimes (i (car dim))
-      (dotimes (j (cadr dim))
-        (setf ($ nm (+ padding i) (+ padding j))
-              ($ m i j))))
-    nm))
-
 (defun vofm (m nr nc p i j)
   (let ((im (- i p))
         (jm (- j p)))
@@ -495,11 +475,7 @@
         0.0
         ($ m 0 (+ (* im nr) jm)))))
 
-(let ((mr ($m '((0 0 0 0) (0 1 2 0) (0 3 4 0) (0 0 0 0))))
-      (m ($m '(1 2 3 4))))
-  (list ($ mr 2 1) (vofm m 2 2 1 2 1)))
-
-(defun $convolute-dim (m nr nc f fs &key (b 0.0) (padding 0) (stride 1))
+(defun $convolute-dim (nr nc fs &key (padding 0) (stride 1))
   (let ((cr (1+ (/ (+ (- nr fs) (* 2 padding)) stride)))
         (cc (1+ (/ (+ (- nc fs) (* 2 padding)) stride))))
     (list cr cc)))
@@ -514,7 +490,7 @@
     (when (and (integerp cr) (integerp cc))
       (let* ((mr (+ nr (* 2 padding)))
              (mc (+ nc (* 2 padding)))
-             (cm ($zeros cr cc))
+             (cm ($zeros 1 (* cr cc)))
              (fd (1- fs))
              (bf (* 1.0 b)))
         (loop :for i :from 0 :below mr :by stride :while (< (+ i fd) mr) :do
@@ -525,5 +501,5 @@
                       (let ((mv (vofm m nr nc padding (+ i ik) (+ j jk)))
                             (fv (vofm f fs fs 0 ik jk)))
                         (incf e (* mv fv)))))
-                (setf ($ cm i j) (+ e bf)))))
+                (setf ($ cm 0 (+ (* cc i) j)) (+ e bf)))))
         cm))))

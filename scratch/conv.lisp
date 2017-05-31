@@ -3,7 +3,7 @@
 
 (let* ((m ($m '(0 1 2 3 4 5 6 7 8 9 10 11)))
        (f ($m '(1 0 1 2 1 2 3 2 3))))
-  ($convolute m 4 4 f 2 :b 0.0 :padding 1))
+  ($convolute m 4 4 f 2 :b 0.0))
 
 (defparameter *mnist* (read-mnist-data))
 
@@ -48,7 +48,7 @@
          (mw ($ncol m))
          (ch (1+ (/ (+ (- mh fh) (* 2 padding)) stride)))
          (cw (1+ (/ (+ (- mw fw) (* 2 padding)) stride)))
-         (cm ($m 0 1 (* ch cw fh fw)))
+         (cm ($zeros 1 (* ch cw fh fw)))
          (pcm ($ptr cm)))
     (loop :for i :from padding :by stride :below ch :do
        (loop :for j :from padding :by stride :below cw :do
@@ -64,6 +64,15 @@
                (3 0 1 2)
                (2 3 0 1)))))
   ($sm m 0 0 3 3 T))
+
+(let* ((m ($m '((1 2 3 0)
+                (0 1 2 3)
+                (3 0 1 2)
+                (2 3 0 1))))
+       (f ($m '((2 0 1)
+                (0 1 2)
+                (1 0 2)))))
+  ($convolute ($reshape m 1 16) 4 4 ($reshape f 1 9) 3))
 
 (let* ((m ($m '((1 2 3 0)
                 (0 1 2 3)
@@ -126,6 +135,19 @@
                  (0 1 2)
                  (1 0 2)))))
     ($convolute m f :stride 1)))
+
+(let* ((train-images (getf *mnist* :train-images))
+       (f ($m '(2 0 1 0 1 2 1 0 2)))
+       (X ($ train-images 0 T))
+       (c1 ($convolute X 28 28 f 3 :padding 1 :stride 3)))
+  c1)
+
+(let* ((train-images (getf *mnist* :train-images))
+       (f ($m '(2 0 1 0 1 2 1 0 2)))
+       (ntr 1000))
+  (time (dotimes (i ntr) ($convolute ($ train-images i T) 28 28 f 3))))
+
+($reshape ($m '((2 0 1) (0 1 2) (1 0 2))) 1 9)
 
 (let* ((train-images (getf *mnist* :train-images))
        (c1 (conv-at train-images 28 28 0))
