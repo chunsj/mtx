@@ -43,6 +43,29 @@
              (incf n))))))
   cm)
 
+
+(defun $mkcl (m nr nc fs &key (padding 0) (stride 1))
+  ;; m and f should be in the form of row vector
+  (let ((cr (1+ (/ (+ (- nr fs) (* 2 padding)) stride)))
+        (cc (1+ (/ (+ (- nc fs) (* 2 padding)) stride))))
+    (assert (and (integerp cr) (integerp cc))
+            nil
+            "dimension mismatched")
+    (when (and (integerp cr) (integerp cc))
+      (let* ((mr (+ nr (* 2 padding)))
+             (mc (+ nc (* 2 padding)))
+             (fd (1- fs))
+             (cl ($zeros 1 (* fs fs cr cc)))
+             (cli 0))
+        (loop :for i :from 0 :below mr :by stride :while (< (+ i fd) mr) :do
+           (loop :for j :from 0 :below mc :by stride :while (< (+ j fd) mc) :do
+              (loop :for ik :from 0 :below fs :do
+                 (loop :for jk :from 0 :below fs :do
+                    (let ((mv (vofm m nr nc padding (+ i ik) (+ j jk))))
+                      (setf ($ cl 0 cli) mv)
+                      (incf cli))))))
+        cl))))
+
 (defun im2cl (m fh fw stride padding)
   (let* ((mh ($nrow m))
          (mw ($ncol m))
@@ -63,6 +86,13 @@
                (0 1 2 3)
                (3 0 1 2)
                (2 3 0 1)))))
+  ($mkcl ($rowv m) 4 4 3))
+
+(let ((m ($reshape ($m '((1 2 3 0)
+                         (0 1 2 3)
+                         (3 0 1 2)
+                         (2 3 0 1)))
+                   1 16)))
   ($sm m 0 0 3 3 T))
 
 (let* ((m ($m '((1 2 3 0)
@@ -141,6 +171,12 @@
        (X ($ train-images 0 T))
        (c1 ($convolute X 28 28 f 3 :padding 1 :stride 3)))
   c1)
+
+(let* ((train-images (getf *mnist* :train-images))
+       (X ($ train-images 0 T)))
+  (time (dotimes (i 10) ($mkcl X 28 28 3))))
+
+(* 26 26 9)
 
 (let* ((train-images (getf *mnist* :train-images))
        (f ($m '(2 0 1 0 1 2 1 0 2)))

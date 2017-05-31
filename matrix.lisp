@@ -63,6 +63,9 @@
         (setf ($ nm i j) ($ref tm (+ (* i ncol) j)))))
     nm))
 
+(defun $rowv (m) ($reshape m 1 ($size m)))
+(defun $colv (m) ($reshape m ($size m) 1))
+
 (defmethod print-object ((m MX) stream)
   (let* ((nr0 ($nrow m))
          (nc0 ($ncol m))
