@@ -1,5 +1,10 @@
 (in-package :mtx)
 
+
+(let* ((m ($m '(0 1 2 3 4 5 6 7 8 9 10 11)))
+       (f ($m '(1 0 1 2 1 2 3 2 3))))
+  ($convolute m 4 4 f 2 :b 0.0 :padding 1))
+
 (defparameter *mnist* (read-mnist-data))
 
 (let* ((m ($m '((1 2 3 0)
@@ -47,12 +52,27 @@
          (pcm ($ptr cm)))
     (loop :for i :from padding :by stride :below ch :do
        (loop :for j :from padding :by stride :below cw :do
-          (let* ((sm ($sm m i j fh fw))
+          (let* ((sm ($sm m i j fh fw T))
                  (psm ($ptr sm))
                  (l (+ (* i (* cw fh fw)) (* j (* fh fw)))))
             (dotimes (k (* fh fw))
               (setf ($prf pcm (+ k l)) ($prf psm k))))))
     cm))
+
+(let ((m ($m '((1 2 3 0)
+               (0 1 2 3)
+               (3 0 1 2)
+               (2 3 0 1)))))
+  ($sm m 0 0 3 3 T))
+
+(let* ((m ($m '((1 2 3 0)
+                (0 1 2 3)
+                (3 0 1 2)
+                (2 3 0 1))))
+       (f ($m '((2 0 1)
+                (0 1 2)
+                (1 0 2)))))
+  (im2cl m ($nrow f) ($ncol f) 1 0))
 
 (let* ((m ($m '((1 2 3 0)
                 (0 1 2 3)
@@ -64,21 +84,21 @@
   (time (dotimes (i 1000) (im2cl m ($nrow f) ($ncol f) 1 0))))
 
 (let* ((train-images (getf *mnist* :train-images)))
-  (im2cl ($reshape! ($ train-images 0 T) 28 28) 3 3 1 0))
+  (im2cl ($reshape ($ train-images 0 T) 28 28) 3 3 1 0))
 
 (let* ((train-images (getf *mnist* :train-images)))
   (time
    (dotimes (n 1000)
-     (im2cl ($reshape! ($ train-images n T) 28 28) 3 3 1 0))))
+     (im2cl ($reshape ($ train-images n T) 28 28) 3 3 1 0))))
 
 (let* ((train-images (getf *mnist* :train-images)))
   (let ((f ($m '((2 0 1) (0 1 2) (1 0 2))))
         (r ($zeros 1 676)))
     (time
      (dotimes (n 1000)
-       (let ((mcl (im2cl ($reshape! ($ train-images n T) 28 28) 3 3 1 0)))
-         ($gemm ($reshape! f 1 9)
-                ($reshape! mcl 9 (/ ($size mcl) 9))
+       (let ((mcl (im2cl ($reshape ($ train-images n T) 28 28) 3 3 1 0)))
+         ($gemm ($reshape f 1 9)
+                ($reshape mcl 9 (/ ($size mcl) 9))
                 :c r))))))
 
 
@@ -101,7 +121,7 @@
   ($convolute m f :padding 1 :stride 3))
 
 (defun conv-at (images w h i)
-  (let ((m ($reshape! ($ images i T) w h))
+  (let ((m ($reshape ($ images i T) w h))
         (f ($m '((2 0 1)
                  (0 1 2)
                  (1 0 2)))))
@@ -110,10 +130,10 @@
 (let* ((train-images (getf *mnist* :train-images))
        (c1 (conv-at train-images 28 28 0))
        (f ($m '((2 0 1) (0 1 2) (1 0 2))))
-       (c2 ($convolute ($reshape! c1 26 26) f))
-       (c3 ($convolute ($reshape! c2 24 24) f))
-       (c4 ($convolute ($reshape! c3 22 22) f))
-       (c5 ($convolute ($reshape! c4 20 20) f)))
+       (c2 ($convolute ($reshape c1 26 26) f))
+       (c3 ($convolute ($reshape c2 24 24) f))
+       (c4 ($convolute ($reshape c3 22 22) f))
+       (c5 ($convolute ($reshape c4 20 20) f)))
   c5)
 
 ;; XXX too slow yet

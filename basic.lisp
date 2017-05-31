@@ -488,17 +488,42 @@
               ($ m i j))))
     nm))
 
-(defun $convolute (m f &key (b 0.0) (padding 0) (stride 1))
-  (let* ((m (if (> padding 0) (padded-matrix m padding) m))
-         (dim ($dim m))
-         (nr (car dim))
-         (nc (cadr dim))
-         (cnvr 0)
-         (cvs nil)
-         (fd (1- ($nrow f)))
-         (bf (* 1.0 b)))
-    (loop :for i :from 0 :below nr :by stride :while (<= (+ i fd) (1- nr)) :do
-       (incf cnvr)
-       (loop :for j :from 0 :below nc :by stride :while (<= (+ j fd) (1- nc)) :do
-          (push (+ ($fma ($sm m i j 3 3) f) bf) cvs)))
-    ($m (reverse cvs) cnvr (/ ($count cvs) cnvr))))
+(defun vofm (m nr nc p i j)
+  (let ((im (- i p))
+        (jm (- j p)))
+    (if (or (< im 0) (>= im nr) (< jm 0) (>= jm nc))
+        0.0
+        ($ m 0 (+ (* im nr) jm)))))
+
+(let ((mr ($m '((0 0 0 0) (0 1 2 0) (0 3 4 0) (0 0 0 0))))
+      (m ($m '(1 2 3 4))))
+  (list ($ mr 2 1) (vofm m 2 2 1 2 1)))
+
+(defun $convolute-dim (m nr nc f fs &key (b 0.0) (padding 0) (stride 1))
+  (let ((cr (1+ (/ (+ (- nr fs) (* 2 padding)) stride)))
+        (cc (1+ (/ (+ (- nc fs) (* 2 padding)) stride))))
+    (list cr cc)))
+
+(defun $convolute (m nr nc f fs &key (b 0.0) (padding 0) (stride 1))
+  ;; m and f should be in the form of row vector
+  (let ((cr (1+ (/ (+ (- nr fs) (* 2 padding)) stride)))
+        (cc (1+ (/ (+ (- nc fs) (* 2 padding)) stride))))
+    (assert (and (integerp cr) (integerp cc))
+            nil
+            "dimension mismatched")
+    (when (and (integerp cr) (integerp cc))
+      (let* ((mr (+ nr (* 2 padding)))
+             (mc (+ nc (* 2 padding)))
+             (cm ($zeros cr cc))
+             (fd (1- fs))
+             (bf (* 1.0 b)))
+        (loop :for i :from 0 :below mr :by stride :while (< (+ i fd) mr) :do
+           (loop :for j :from 0 :below mc :by stride :while (< (+ j fd) mc) :do
+              (let ((e 0))
+                (loop :for ik :from 0 :below fs :do
+                   (loop :for jk :from 0 :below fs :do
+                      (let ((mv (vofm m nr nc padding (+ i ik) (+ j jk)))
+                            (fv (vofm f fs fs 0 ik jk)))
+                        (incf e (* mv fv)))))
+                (setf ($ cm i j) (+ e bf)))))
+        cm))))
