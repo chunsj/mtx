@@ -197,3 +197,24 @@
 ;; XXX too slow yet
 (let* ((train-images (getf *mnist* :train-images)))
   (time (dotimes (i 1000) (conv-at train-images 28 28 i))))
+
+(defun idiv (a b) (floor a b))
+
+(let* ((h0 4)
+       (w0 4)
+       (f 3)
+       (h1 (1+ (- h0 f)))
+       (w1 (1+ (- w0 f)))
+       (nd0 1)
+       (up (1- (* nd0 f f h1 w1))))
+  (loop :for k :from 0 :upto up :do
+     (let* ((p (idiv k (* h1 w1)))
+            (q (mod k (* h1 w1)))
+            (d (idiv (idiv p f) f))
+            (u (mod (idiv p f) f))
+            (v (mod p f))
+            (i1 (idiv q w1))
+            (j1 (mod q w1))
+            (i (+ i1 u))
+            (j (+ j1 v)))
+       (print (list k d i j)))))
