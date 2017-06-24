@@ -61,6 +61,28 @@
   (with-slots (out lky) l
     ($map (lambda (de oe) (if (> oe 0) de (* lky de))) d out)))
 
+(defclass ELULAYER (LAYER)
+  ((out :initform nil)))
+
+(defun $elu-layer () (make-instance 'ELULAYER))
+
+(defmethod forward-propagate ((l ELULAYER) &key xs train)
+  (declare (ignore train xs)))
+
+(defmethod backward-propagate ((l ELULAYER) &key d)
+  (declare (ignore d)))
+
+(defclass SELULAYER (LAYER)
+  ((out :initform nil)))
+
+(defun $selu-layer () (make-instance 'SELULAYER))
+
+(defmethod forward-propagate ((l SELULAYER) &key xs train)
+  (declare (ignore train xs)))
+
+(defmethod backward-propagate ((l SELULAYER) &key d)
+  (declare (ignore d)))
+
 (defclass SOFTMAXCEELOSSLAYER (LAYER)
   ((loss :initform nil)
    (ys :reader ys :initform nil)
