@@ -494,12 +494,59 @@
              (fd (1- fs))
              (bf (* 1.0 b)))
         (loop :for i :from 0 :below mr :by stride :while (< (+ i fd) mr) :do
-           (loop :for j :from 0 :below mc :by stride :while (< (+ j fd) mc) :do
-              (let ((e 0))
-                (loop :for ik :from 0 :below fs :do
-                   (loop :for jk :from 0 :below fs :do
-                      (let ((mv (vofm m nr nc padding (+ i ik) (+ j jk)))
-                            (fv (vofm f fs fs 0 ik jk)))
-                        (incf e (* mv fv)))))
-                (setf ($ cm 0 (+ (* cc i) j)) (+ e bf)))))
+          (loop :for j :from 0 :below mc :by stride :while (< (+ j fd) mc) :do
+            (let ((e 0))
+              (loop :for ik :from 0 :below fs :do
+                (loop :for jk :from 0 :below fs :do
+                  (let ((mv (vofm m nr nc padding (+ i ik) (+ j jk)))
+                        (fv (vofm f fs fs 0 ik jk)))
+                    (incf e (* mv fv)))))
+              (setf ($ cm 0 (+ (* cc i) j)) (+ e bf)))))
         cm))))
+
+(defun $conv2d (input w)
+  (let* ((N1 ($nrow input))
+         (N2 ($ncol input))
+         (m ($nrow w))
+         (K1 (+ N1 (- m) 1))
+         (K2 (+ N2 (- m) 1))
+         (output ($zeros K1 K2)))
+    (loop :for i :from 0 :below K1 :do
+      (loop :for j :from 0 :below K2 :do
+        (let ((m-1 (- m 1)))
+          (setf ($ output i j)
+                (loop :for a :from 0 :to m-1
+                      :sum (loop :for b :from 0 :to m-1
+                                 :sum (* ($ w a b) ($ input (+ i a) (+ j b)))))))))
+    output))
+
+(defun $maxpool (input m)
+  (let* ((N1 ($nrow input))
+         (N2 ($ncol input))
+         (K1 (+ N1 (- m) 1))
+         (K2 (+ N2 (- m) 1))
+         (output ($zeros K1 K2)))
+    (loop :for i :from 0 :below K1 :do
+      (loop :for j :from 0 :below K2 :do
+        (let ((m-1 (- m 1)))
+          (setf ($ output i j)
+                (loop :for a :from 0 :to m-1
+                      :maximize (loop :for b :from 0 :to m-1
+                                      :maximize ($ input (+ i a) (+ j b))))))))
+    output))
+
+(defun $avgpool (input m)
+  (let* ((N1 ($nrow input))
+         (N2 ($ncol input))
+         (K1 (+ N1 (- m) 1))
+         (K2 (+ N2 (- m) 1))
+         (1/m*m (/ 1.0 (* m m)))
+         (output ($zeros K1 K2)))
+    (loop :for i :from 0 :below K1 :do
+      (loop :for j :from 0 :below K2 :do
+        (let ((m-1 (- m 1)))
+          (setf ($ output i j)
+                (* 1/m*m (loop :for a :from 0 :to m-1
+                               :sum (loop :for b :from 0 :to m-1
+                                          :sum ($ input (+ i a) (+ j b)))))))))
+    output))
