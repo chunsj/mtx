@@ -2,8 +2,10 @@
   (:use #:common-lisp
         #:fnv
         #:cl-blapack)
-  (:export #:size
-           #:dim
+  (:export #:$size
+           #:$dim
+           #:$nrow
+           #:$ncol
            #:$m
            #:$r
            #:$rn
@@ -17,6 +19,7 @@
            #:$reshape
            #:$transpose
            #:$sm
+           #:$rot180
            #:$+
            #:$-
            #:$*

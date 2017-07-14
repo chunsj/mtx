@@ -305,3 +305,12 @@
                        (dotimes (i nr)
                          (setf ($ nm 0 (+ (+ (* i nc) j))) ($ m (+ i0 i) (+ j0 j)))))
                      nm))))
+
+(defun $rot180 (m)
+  (let* ((nr ($nrow m))
+         (nc ($ncol m))
+         (nm ($zeros nr nc)))
+    (loop :for i :from 0 :below nr :do
+      (loop :for j :from 0 :below nc :do
+        (setf ($ nm i j) ($ m (- nr i 1) (- nc j 1)))))
+    nm))
