@@ -5,10 +5,6 @@
 (defun $vx (n &key (initial-value 0.0))
   (make-fnv-float n :initial-value initial-value))
 
-(defgeneric $count (s))
-
-(defmethod $count ((s LIST)) (length s))
-(defmethod $count ((s ARRAY)) (length s))
 (defmethod $count ((s FNV-FLOAT)) (fnv-length s))
 
 (defmacro $ref (v i) `(fnv-float-ref ,v ,i))
