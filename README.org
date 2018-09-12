@@ -1,3 +1,5 @@
+* THIS IS UNMAINTAINED ONE. USE https://bitbucket.org/chunsj/th 
+
 * What is MTX?
 MTX is built during my reading of "Deep Learning From Scratch" book. I'd like to build a simple common
 lisp library from which one can learn (as I have done) lisp programming and its application to deep
